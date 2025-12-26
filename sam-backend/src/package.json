@@ -1,0 +1,23 @@
+{
+  "name": "mtg-card-lookup-lambda",
+  "version": "1.0.0",
+  "description": "Lambda function for MTG card OCR and Scryfall lookup",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "mtg",
+    "magic-the-gathering",
+    "ocr",
+    "scryfall",
+    "lambda"
+  ],
+  "author": "Sam Pullara",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
+

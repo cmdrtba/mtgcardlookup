@@ -1,0 +1,52 @@
+name: Release Chrome Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create extension zip
+        run: |
+          zip -r mtg-card-lookup-${{ steps.version.outputs.VERSION }}.zip \
+            manifest.json \
+            background.js \
+            content.js \
+            overlay.css \
+            popup.html \
+            images/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: mtg-card-lookup-${{ steps.version.outputs.VERSION }}.zip
+          body: |
+            ## MTG Card Lookup v${{ steps.version.outputs.VERSION }}
+            
+            ### Installation
+            1. Download the zip file below
+            2. Extract to a folder
+            3. Open Chrome and go to `chrome://extensions`
+            4. Enable "Developer mode" (toggle in top right)
+            5. Click "Load unpacked" and select the extracted folder
+            
+            ### Usage
+            - Press backtick (\`) on YouTube to capture and lookup a card at cursor
+            - Press Escape to close the overlay
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
