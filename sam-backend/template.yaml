@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MTG Card Lookup API - OCR and Scryfall lookup backend
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        GEMINI_API_KEY: '{{resolve:ssm:/mtg-card-lookup/gemini-api-key:2}}'
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  MTGCardLookupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mtg-card-lookup-${Stage}
+      CodeUri: src/
+      Handler: index.handler
+      Description: Performs OCR on card images and returns Scryfall data
+      Events:
+        LookupCard:
+          Type: Api
+          Properties:
+            Path: /lookup
+            Method: POST
+            RestApiId: !Ref MTGCardLookupApi
+        LookupByName:
+          Type: Api
+          Properties:
+            Path: /lookup-by-name
+            Method: POST
+            RestApiId: !Ref MTGCardLookupApi
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: mtg-card-lookup/*
+
+  MTGCardLookupApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub mtg-card-lookup-api-${Stage}
+      StageName: !Ref Stage
+      Cors:
+        AllowMethods: "'POST, OPTIONS'"
+        AllowHeaders: "'Content-Type, X-Requested-With'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      # Throttling to prevent abuse
+      MethodSettings:
+        - ResourcePath: /lookup
+          HttpMethod: POST
+          ThrottlingRateLimit: 10
+          ThrottlingBurstLimit: 20
+        - ResourcePath: /lookup-by-name
+          HttpMethod: POST
+          ThrottlingRateLimit: 10
+          ThrottlingBurstLimit: 20
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${MTGCardLookupApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/lookup
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt MTGCardLookupFunction.Arn
+
