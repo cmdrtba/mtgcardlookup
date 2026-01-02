@@ -13,11 +13,13 @@ A Chrome extension that identifies Magic: The Gathering cards on YouTube videos 
 
 ## Installation
 
+**Note:** This extension has been tested and works with both Chrome and Microsoft Edge.
+
 ### From GitHub Release
 
 1. Download the latest `.zip` from [Releases](../../releases)
 2. Extract to a folder
-3. Open Chrome and go to `chrome://extensions`
+3. Open Chrome (or Edge) and go to `chrome://extensions` (or `edge://extensions`)
 4. Enable **Developer mode** (toggle in top right)
 5. Click **Load unpacked** and select the extracted folder
 
